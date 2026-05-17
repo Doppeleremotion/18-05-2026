@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>with love, for Daïna.</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@300;400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #C8B8F0;
+    --soft-gold: #E8C97A;
+    --warm-peach: #F2D5B8;
+    --sage: #B8D4C0;
+    --lavender: #D6CCF0;
+    --dusty-rose: #EAC4C4;
+    --text-dark: #2C2420;
+    --text-mid: #2C2420;
+    --text-light: #3D2E28;
+  }
+
+  html, body {
+    width: 100%;
+    min-height: 100vh;
+    background: #C8B8F0 !important;
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  canvas#bg {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    text-align: center;
+  }
+
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    margin-bottom: 0.6rem;
+  }
+
+  .name {
+    font-family: 'EB Garamond', serif;
+    font-size: clamp(1.7rem, 6vw, 2.8rem);
+    font-weight: 300;
+    font-style: italic;
+    color: var(--text-dark);
+    line-height: 1.25;
+    margin-bottom: 0.3rem;
+  }
+
+  .age-line {
+    font-size: 13px;
+    color: var(--text-light);
+    letter-spacing: 0.08em;
+    margin-bottom: 1rem;
+  }
+
+  .egg-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .egg-wrap {
+    position: relative;
+    width: 110px;
+    height: 140px;
+    margin-bottom: 1rem;
+  }
+
+  .egg-svg {
+    width: 100%;
+    height: 100%;
+    transition: transform 0.12s ease;
+  }
+
+  .egg-area:active .egg-svg {
+    transform: scale(0.95);
+  }
+
+  .tap-hint {
+    font-size: 12px;
+    color: var(--text-light);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: opacity 0.4s;
+  }
+
+  .crack-overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+
+  .message-section {
+    max-width: 720px;
+    width: 100%;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+    pointer-events: none;
+  }
+
+  .message-section.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .divider {
+    width: 36px;
+    height: 1px;
+    background: var(--warm-peach);
+    margin: 0 auto 1.8rem;
+  }
+
+  .message-card {
+    background: rgba(180,160,240,0.45);
+    border: 0.5px solid rgba(180,155,130,0.25);
+    border-radius: 16px;
+    padding: 2rem 2rem;
+    text-align: left;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    margin-bottom: 1.5rem;
+  }
+
+  .message-card p {
+    font-family: 'EB Garamond', serif;
+    font-size: clamp(1.05rem, 3vw, 1.18rem);
+    font-weight: 300;
+    line-height: 1.9;
+    color: var(--text-dark);
+    margin-bottom: 1.2rem;
+  }
+
+  .message-card p:last-child { margin-bottom: 0; }
+  .message-card em { color: var(--text-mid); font-style: italic; }
+
+  .signature {
+    font-family: 'EB Garamond', serif;
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--text-light);
+    margin-top: 1.2rem;
+    text-align: right;
+  }
+
+  .replay-btn {
+    background: transparent;
+    border: 0.5px solid rgba(180,155,130,0.4);
+    border-radius: 40px;
+    padding: 10px 24px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, transform 0.1s;
+    display: inline-block;
+    margin-top: 0.5rem;
+  }
+
+  .replay-btn:hover { border-color: rgba(180,155,130,0.8); color: var(--text-mid); }
+  .replay-btn:active { transform: scale(0.97); }
+
+  .hatched .egg-area { pointer-events: none; }
+
+  @keyframes eggShake {
+    0%,100% { transform: rotate(0deg); }
+    20% { transform: rotate(-4deg); }
+    40% { transform: rotate(4deg); }
+    60% { transform: rotate(-3deg); }
+    80% { transform: rotate(3deg); }
+  }
+
+  .shake { animation: eggShake 0.35s ease; }
+
+  @keyframes burstOut {
+    0% { transform: translate(0,0) scale(0) rotate(0deg); opacity: 1; }
+    60% { opacity: 1; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(1) rotate(var(--rot)); opacity: 0; }
+  }
+
+  @keyframes flutter {
+    0%,100% { transform: translate(var(--fx), var(--fy)) rotate(var(--fr)) scaleX(1); }
+    50% { transform: translate(calc(var(--fx) + 8px), calc(var(--fy) - 6px)) rotate(calc(var(--fr) + 10deg)) scaleX(0.6); }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<div class="page" id="page">
+  <p class="eyebrow">18 · 05 · 2026</p>
+  <h1 class="name">Dongmo Zodinding Daïna</h1>
+  <p class="age-line">welcome to lvl 2</p>
+
+  <div class="egg-area" id="eggArea" onclick="tapEgg()">
+    <div class="egg-wrap">
+      <svg class="egg-svg" id="eggSvg" viewBox="0 0 110 140" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="eggGlow" cx="42%" cy="35%" r="60%">
+            <stop offset="0%" stop-color="#FFF9EE"/>
+            <stop offset="100%" stop-color="#F2D5B8"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="55" cy="72" rx="40" ry="52" fill="url(#eggGlow)" stroke="#E8C07A" stroke-width="0.8"/>
+        <ellipse cx="45" cy="52" rx="8" ry="5" fill="rgba(255,255,255,0.5)" transform="rotate(-20,45,52)"/>
+        <g id="cracks" opacity="0"></g>
+        <g id="glowRing" opacity="0">
+          <ellipse cx="55" cy="72" rx="44" ry="56" fill="none" stroke="#F0D080" stroke-width="2" opacity="0.5"/>
+          <ellipse cx="55" cy="72" rx="49" ry="61" fill="none" stroke="#F0D080" stroke-width="1" opacity="0.25"/>
+        </g>
+      </svg>
+    </div>
+    <p class="tap-hint" id="tapHint">tap on the egg</p>
+  </div>
+
+  <div class="message-section" id="msgSection">
+    <div class="divider"></div>
+    <div class="message-card">
+      <p>Daïna,</p>
+      <p>Okay so we’re here now and what can I say really?</p>
+      <p>Today’s the day you officially level up but honestly, you've been building yourself long before today. Quietly, patiently and intentionally, without waiting for anyone's permission.</p>
+      <p>Here’s a secret I should tell you: I told my mom about you. I often spotted you selling around our quartier and one time I told my mom, “Mama, that’s my classmate Daïna. We’re not really close in school but she’s someone I greatly respect from a distance.” And she said “Why? Why aren’t you friends with her? See how hard working she is, you’d learn a lot from her.” This was back when we were in Douala.</p>
+      <p>When we’d moved to Buea in 2024, she asked me one day,</p>
+      <p>“How’s that your friend Daïna?”</p>
+      <p>“She’s okay, we talk frequently these days on WhatsApp. She talks about homeschooling kids in her quartier, she’s an affiliate marketer and she also talks about reading classic self-improvement books like Napoleon Hill and Robert Greene.”</p>
+      <p>“And how do you <em>feel</em> about that?”</p>
+      <p>“Sometimes I wish I’d gotten close to her before high school, but I’m also just grateful to have her as a friend now.”</p>
+      <p>“I told you.”</p>
+      <p>“Yes, mama. She’s precious.”</p>
+      <p>You're the kind of person my parents would be proud of. I mean every word of that. Industrious, persevering, honest, smart and real. Not loud about it, not performing it. Just living it. You don't just desire change; you actually <em>do</em> something about it. That’s rarer than you think.</p>
+      <p>And the fact that you could trust me with the harder parts of your story means more than you know. I’m honored to be your friend.</p>
+      <p>My prayer for you is that your choices be aligned with your destiny and your efforts be rewarded with a greater weight in glory.</p>
+      <p>And that’s it.</p>
+      <p>Happy birthday, Daïna. Here's to you and to everything you're becoming.</p>
+      <p>Santé ! 🥂</p>
+      <div class="signature">— love, Andrew 🤍</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const bgCanvas = document.getElementById('bg');
+const bgCtx = bgCanvas.getContext('2d');
+function resize() {
+  bgCanvas.width = window.innerWidth;
+  bgCanvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const ambientColors = ['#FFFFFF','#F4C0D1','#7B5EA7','#FFE8A3','#9FE1CB','#F0997B'];
+const particles = Array.from({length: 35}, () => ({
+  x: Math.random() * window.innerWidth,
+  y: Math.random() * window.innerHeight,
+  r: Math.random() * 6 + 3,
+  speed: Math.random() * 0.3 + 0.08,
+  drift: Math.random() * 0.25 - 0.125,
+  opacity: Math.random() * 0.45 + 0.2,
+  color: ambientColors[Math.floor(Math.random() * ambientColors.length)]
+}));
+
+function drawBg() {
+  bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+  particles.forEach(p => {
+    bgCtx.beginPath();
+    bgCtx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    bgCtx.fillStyle = p.color;
+    bgCtx.globalAlpha = p.opacity;
+    bgCtx.fill();
+    p.y -= p.speed;
+    p.x += p.drift;
+    if (p.y < -10) { p.y = bgCanvas.height + 10; p.x = Math.random() * bgCanvas.width; }
+  });
+  bgCtx.globalAlpha = 1;
+  requestAnimationFrame(drawBg);
+}
+drawBg();
+
+let taps = 0;
+let hatched = false;
+const eggArea = document.getElementById('eggArea');
+const eggSvg = document.getElementById('eggSvg');
+const cracks = document.getElementById('cracks');
+const glowRing = document.getElementById('glowRing');
+const tapHint = document.getElementById('tapHint');
+const msgSection = document.getElementById('msgSection');
+
+const crackPaths = [
+  'M55 30 L50 50 L58 55 L48 75',
+  'M55 30 L60 48 L52 54 L63 72',
+  'M40 55 L55 60 L45 80 M70 50 L55 58 L68 78'
+];
+
+function tapEgg() {
+  if (hatched) return;
+  taps++;
+  eggSvg.classList.remove('shake');
+  void eggSvg.offsetWidth;
+  eggSvg.classList.add('shake');
+
+  if (taps === 1) {
+    cracks.innerHTML = `<path d="${crackPaths[0]}" fill="none" stroke="#C8A050" stroke-width="1.2" stroke-linecap="round"/>`;
+    cracks.setAttribute('opacity','1');
+    glowRing.setAttribute('opacity','0.4');
+    tapHint.textContent = 'keep going...';
+  } else if (taps === 2) {
+    cracks.innerHTML = `
+      <path d="${crackPaths[0]}" fill="none" stroke="#C8A050" stroke-width="1.2" stroke-linecap="round"/>
+      <path d="${crackPaths[1]}" fill="none" stroke="#B89040" stroke-width="1" stroke-linecap="round"/>`;
+    glowRing.setAttribute('opacity','0.8');
+    tapHint.textContent = 'one more...';
+  } else if (taps >= 3) {
+    hatched = true;
+    tapHint.style.opacity = '0';
+    hatch();
+  }
+}
+
+function hatch() {
+  glowRing.setAttribute('opacity','1');
+  eggSvg.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
+  eggSvg.style.transform = 'scale(1.15)';
+  eggSvg.style.opacity = '0';
+
+  setTimeout(() => {
+    eggArea.style.opacity = '0';
+    eggArea.style.transition = 'opacity 0.4s, max-height 0.6s ease, margin 0.6s ease';
+    eggArea.style.maxHeight = '0';
+    eggArea.style.overflow = 'hidden';
+    eggArea.style.marginBottom = '0';
+  }, 400);
+
+  setTimeout(() => {
+    msgSection.classList.add('visible');
+  }, 1800);
+}
+
+
+function resetEgg() {
+  taps = 0;
+  hatched = false;
+  cracks.innerHTML = '';
+  cracks.setAttribute('opacity','0');
+  glowRing.setAttribute('opacity','0');
+  eggSvg.style.transform = 'scale(1)';
+  eggSvg.style.opacity = '1';
+  eggArea.style.opacity = '1';
+  eggArea.style.maxHeight = '';
+  eggArea.style.overflow = '';
+  eggArea.style.marginBottom = '';
+  tapHint.style.opacity = '1';
+  tapHint.textContent = 'tap on the egg';
+  msgSection.classList.remove('visible');
+}
+</script>
+</body>
+</html>
